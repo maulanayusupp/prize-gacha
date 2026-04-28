@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_nuxt/
+
+# Sitemap
+Sitemap: https://moneygacha.id/sitemap.xml
