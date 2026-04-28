@@ -47,7 +47,7 @@ function submit() {
   <section class="card text-center p-8 sm:p-10 bg-gradient-to-br from-gold/10 to-purple-600/10 border-2 border-gold/30 rounded-3xl backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden">
     <div class="card-shine" />
     <div class="text-7xl mb-4 coin-bounce stagger" style="--d: 0s">💰</div>
-    <h1 class="logo-text stagger" style="--d: 0.1s">Money Gacha</h1>
+    <h1 class="logo-text stagger" style="--d: 0.1s">Prize Gacha</h1>
     <div class="text-sm tracking-[6px] text-purple-300 uppercase font-semibold mt-2 mb-8 stagger" style="--d: 0.2s">
       Roll Your Fortune
     </div>

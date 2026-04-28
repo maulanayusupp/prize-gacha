@@ -4,10 +4,11 @@ import type { Prize, Rarity } from '~/types/gacha'
 
 const { public: { siteUrl, siteName } } = useRuntimeConfig()
 
-const pageTitle = 'Money Gacha — Roll Your Fortune & Menangkan Hadiah Virtual'
+const pageTitle = 'Prize Gacha — Roll Your Fortune, Menangkan Hadiah Gacha Virtual'
 const pageDescription =
-  'Putar mesin gacha, raih hadiah dari Common sampai Mythic, lalu pamerkan keberuntunganmu. Gratis dimainkan langsung di browser, tanpa unduh.'
+  'Putar mesin gacha online, raih hadiah dari rarity Common, Rare, Epic, Legendary, sampai Mythic. Gratis dimainkan langsung di browser, tanpa unduh, tanpa daftar.'
 const ogImage = `${siteUrl}/og-image.png`
+const ogImageAlt = 'Prize Gacha — Roll Your Fortune. Mesin gachapon dengan hadiah Common hingga Mythic.'
 
 useSeoMeta({
   title: pageTitle,
@@ -18,7 +19,12 @@ useSeoMeta({
   twitterDescription: pageDescription,
   ogUrl: siteUrl,
   ogImage,
+  ogImageAlt,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  ogImageType: 'image/png',
   twitterImage: ogImage,
+  twitterImageAlt: ogImageAlt,
   twitterCard: 'summary_large_image',
 })
 
@@ -33,24 +39,39 @@ useHead({
             '@type': 'WebApplication',
             '@id': `${siteUrl}/#webapp`,
             name: siteName,
+            alternateName: 'PrizeGacha',
             url: siteUrl,
             description: pageDescription,
             applicationCategory: 'GameApplication',
+            applicationSubCategory: 'Casual Game',
             operatingSystem: 'Any',
             inLanguage: 'id-ID',
+            isAccessibleForFree: true,
             browserRequirements: 'Requires JavaScript and a modern browser.',
+            genre: ['Gacha', 'Lucky Draw', 'Casual'],
+            featureList: [
+              'Putar mesin gacha online',
+              'Enam tingkat rarity: Common, Uncommon, Rare, Epic, Legendary, Mythic',
+              'Hadiah uang virtual',
+              'Bagikan hasil gacha sebagai gambar',
+              'Gratis dan tanpa instalasi',
+            ],
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'IDR',
+              availability: 'https://schema.org/InStock',
             },
             image: ogImage,
+            screenshot: ogImage,
+            publisher: { '@id': `${siteUrl}/#org` },
           },
           {
             '@type': 'WebSite',
             '@id': `${siteUrl}/#website`,
             url: siteUrl,
             name: siteName,
+            description: pageDescription,
             inLanguage: 'id-ID',
             publisher: { '@id': `${siteUrl}/#org` },
           },
@@ -59,7 +80,12 @@ useHead({
             '@id': `${siteUrl}/#org`,
             name: siteName,
             url: siteUrl,
-            logo: `${siteUrl}/icon-512.png`,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${siteUrl}/icon-512.png`,
+              width: 512,
+              height: 512,
+            },
           },
         ],
       }),
@@ -137,7 +163,7 @@ function onRolled(prize: Prize) {
 async function handleShare() {
   if (!currentPrize.value) return
   const prize = currentPrize.value
-  const text = `🎉 Saya ${userName.value} mendapatkan Rp ${formatRp(prize.amount)} di Money Gacha! Cobain juga yuk!`
+  const text = `🎉 Saya ${userName.value} mendapatkan Rp ${formatRp(prize.amount)} di Prize Gacha! Cobain juga yuk!`
   try {
     const result = await shareImage(prize, userName.value, text)
     if (result === 'shared-with-image') showToast('✅ Berhasil dibagikan!')
@@ -155,7 +181,7 @@ async function handleDownload() {
   if (!currentPrize.value) return
   try {
     const safe = userName.value.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'player'
-    await downloadImage(currentPrize.value, userName.value, `money-gacha-${safe}-${currentPrize.value.amount}.png`)
+    await downloadImage(currentPrize.value, userName.value, `prize-gacha-${safe}-${currentPrize.value.amount}.png`)
     showToast('💾 Gambar berhasil disimpan!')
   } catch (e) {
     console.error('download error:', e)

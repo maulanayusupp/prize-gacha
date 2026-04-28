@@ -1,10 +1,12 @@
 {
-  "name": "Money Gacha — Roll Your Fortune",
-  "short_name": "Money Gacha",
-  "description": "Game gacha keberuntungan: putar mesin, dapatkan hadiah uang virtual mulai Common hingga Mythic.",
+  "name": "Prize Gacha — Roll Your Fortune",
+  "short_name": "Prize Gacha",
+  "description": "Game gacha keberuntungan online: putar mesin, raih hadiah uang virtual dari Common sampai Mythic.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#1a0b2e",
   "theme_color": "#1a0b2e",
@@ -12,6 +14,12 @@
   "dir": "ltr",
   "categories": ["games", "entertainment"],
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/favicon.ico",
       "sizes": "48x48",
@@ -21,13 +29,30 @@
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ]
 }

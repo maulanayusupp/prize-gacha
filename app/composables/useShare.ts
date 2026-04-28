@@ -28,9 +28,9 @@ export function useShare() {
     if (typeof navigator !== 'undefined' && navigator.canShare && navigator.share) {
       try {
         const blob = await toBlob(canvas)
-        const file = new File([blob], 'money-gacha.png', { type: 'image/png' })
+        const file = new File([blob], 'prize-gacha.png', { type: 'image/png' })
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ title: 'Money Gacha', text, files: [file] })
+          await navigator.share({ title: 'Prize Gacha', text, files: [file] })
           return 'shared-with-image'
         }
       } catch (e: any) {
@@ -42,7 +42,7 @@ export function useShare() {
     // 2) Try Web Share API without file (text only)
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
-        await navigator.share({ title: 'Money Gacha', text })
+        await navigator.share({ title: 'Prize Gacha', text })
         return 'shared-text-only'
       } catch (e: any) {
         if (e?.name === 'AbortError') return 'aborted'
@@ -58,7 +58,7 @@ export function useShare() {
 
     const url = canvas.toDataURL('image/png')
     const link = document.createElement('a')
-    link.download = 'money-gacha.png'
+    link.download = 'prize-gacha.png'
     link.href = url
     document.body.appendChild(link)
     link.click()

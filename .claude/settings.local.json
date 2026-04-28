@@ -7,7 +7,14 @@
       "Bash(npx --yes nuxi@latest init . --template minimal --packageManager npm --gitInit false --no-install --force)",
       "Bash(npm install *)",
       "Bash(npx nuxi *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(npm ls *)",
+      "Bash(rsvg-convert -w 16 -h 16 favicon.svg -o favicon-16.png)",
+      "Bash(rsvg-convert -w 32 -h 32 favicon.svg -o favicon-32.png)",
+      "Bash(rsvg-convert -w 48 -h 48 favicon.svg -o favicon-48.png)",
+      "Bash(rsvg-convert -w 192 -h 192 favicon.svg -o icon-192.png)",
+      "Bash(rsvg-convert -w 512 -h 512 favicon.svg -o icon-512.png)",
+      "Bash(rsvg-convert -w 1200 -h 630 og-image.svg -o og-image.png)"
     ]
   }
 }

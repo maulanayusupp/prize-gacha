@@ -195,7 +195,7 @@ export function useShareCard() {
     // ============ FOOTER ============
     ctx.font = `600 20px ${SANS}`
     ctx.fillStyle = 'rgba(255,255,255,0.45)'
-    ctx.fillText('✨  moneygacha.id  ✨', W / 2, H - 75)
+    ctx.fillText('✨  prizegacha.id  ✨', W / 2, H - 75)
 
     return canvas
   }
