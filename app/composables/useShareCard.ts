@@ -28,23 +28,56 @@ const SANS = 'Poppins, system-ui, -apple-system, "Segoe UI", sans-serif'
 const DISPLAY = 'Bungee, Poppins, system-ui, sans-serif'
 const MONO = '"SF Mono", "JetBrains Mono", Menlo, Consolas, monospace'
 
-async function makeSerial(name: string, amount: number, ts: number): Promise<string> {
-  const payload = `${name}|${amount}|${ts}|prize-gacha`
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase()
+}
+
+async function sha256Hex(input: string): Promise<string> {
   if (typeof crypto !== 'undefined' && typeof crypto.subtle?.digest === 'function') {
-    const buf = new TextEncoder().encode(payload)
+    const buf = new TextEncoder().encode(input)
     const hash = await crypto.subtle.digest('SHA-256', buf)
-    const bytes = new Uint8Array(hash).slice(0, 6)
-    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
-    return `PG-${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}`
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
   }
-  // FNV-1a fallback for non-secure contexts
+  // FNV-1a fallback (non-secure contexts only — extends to 64 hex for shape parity)
   let h = 0x811c9dc5
-  for (let i = 0; i < payload.length; i++) {
-    h ^= payload.charCodeAt(i)
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i)
     h = Math.imul(h, 0x01000193) >>> 0
   }
-  const hex = h.toString(16).toUpperCase().padStart(8, '0')
-  return `PG-${hex.slice(0, 4)}-${hex.slice(4, 8)}`
+  return h.toString(16).padStart(8, '0').repeat(8)
+}
+
+// Serial format: `PG-<ts6>-<sig8>`
+//   ts6  = base36-encoded minutes-since-epoch (6 chars, valid until year 4199)
+//   sig8 = first 4 bytes of SHA-256(name|amount|tsMin|prize-gacha) as hex
+// Timestamp is embedded so verification only needs name+amount+serial.
+export async function makeSerial(name: string, amount: number, ts: number): Promise<string> {
+  const tsMin = Math.floor(ts / 60000)
+  const tsCode = tsMin.toString(36).toUpperCase().padStart(6, '0').slice(-6)
+  const hashHex = await sha256Hex(`${normalizeName(name)}|${amount}|${tsMin}|prize-gacha`)
+  return `PG-${tsCode}-${hashHex.slice(0, 8).toUpperCase()}`
+}
+
+export type VerifyResult =
+  | { valid: true; timestamp: number }
+  | { valid: false; reason: 'format' | 'mismatch' }
+
+export async function verifySerial(
+  serial: string,
+  name: string,
+  amount: number,
+): Promise<VerifyResult> {
+  const m = /^PG-([0-9A-Z]{6})-([0-9A-F]{8})$/i.exec(serial.trim())
+  if (!m) return { valid: false, reason: 'format' }
+  const tsMin = parseInt(m[1], 36)
+  if (!Number.isFinite(tsMin) || tsMin <= 0) return { valid: false, reason: 'format' }
+  const sig = m[2].toUpperCase()
+  const hashHex = await sha256Hex(`${normalizeName(name)}|${amount}|${tsMin}|prize-gacha`)
+  const expected = hashHex.slice(0, 8).toUpperCase()
+  if (expected !== sig) return { valid: false, reason: 'mismatch' }
+  return { valid: true, timestamp: tsMin * 60000 }
 }
 
 function formatTimestamp(ts: number): string {
