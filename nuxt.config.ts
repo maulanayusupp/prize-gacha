@@ -1,11 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://prizegacha.id'
+const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || ''
 const siteName = 'Prize Gacha'
 const title = 'Prize Gacha — Roll Your Fortune, Menangkan Hadiah Gacha Virtual'
 const description =
   'Prize Gacha adalah game gacha keberuntungan online: putar mesin gachapon, raih hadiah dari rarity Common, Rare, Epic, Legendary, hingga Mythic, lalu bagikan kemenanganmu. Gratis, seru, dan langsung dimainkan di browser tanpa perlu unduh.'
 const keywords =
-  'prize gacha, prizegacha, gacha online, gachapon online, game gacha indonesia, gacha simulator, roll fortune, hadiah virtual, game keberuntungan, lucky draw online, undian online, gacha gratis browser, mesin gacha, mythic gacha'
+  'prize gacha, gacha online, gachapon online, game gacha indonesia, gacha simulator, roll fortune, hadiah virtual, game keberuntungan, lucky draw online, undian online, gacha gratis browser, mesin gacha, mythic gacha'
 const ogImage = `${siteUrl}/og-image.png`
 const ogImageAlt = 'Prize Gacha — Roll Your Fortune. Mesin gachapon dengan hadiah Common hingga Mythic.'
 
@@ -28,7 +28,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/sitemap.xml', '/robots.txt'],
+      routes: ['/', '/robots.txt'],
     },
   },
 

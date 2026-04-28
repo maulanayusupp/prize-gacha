@@ -2,6 +2,3 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_nuxt/
-
-# Sitemap
-Sitemap: https://prizegacha.id/sitemap.xml
