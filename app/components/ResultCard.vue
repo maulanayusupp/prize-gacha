@@ -69,7 +69,7 @@ onMounted(() => {
 
       <!-- Animated amount -->
       <div class="result-amount counter">
-        <span class="rp">Rp</span> {{ display }}
+        <span class="rp">Rp</span><span class="amt">{{ display }}</span>
       </div>
 
       <div class="reveal-line text-sm text-white/70 mt-3 italic" style="--d: 1.6s">

@@ -249,23 +249,56 @@ export function useShareCard() {
     ctx.fillText('ANDA MENDAPATKAN', W / 2, y)
 
     // ============ AMOUNT ============
+    // "Rp" prefix rendered separately in Poppins (smaller, gold) so the
+    // currency is unambiguous; Bungee renders Rp as boxy caps that blend
+    // into the digits and read as part of the number.
     y += 100
-    const amountText = `Rp ${formatRp(prize.amount)}`
-    let amountSize = 110
-    ctx.font = `400 ${amountSize}px ${DISPLAY}`
-    while (ctx.measureText(amountText).width > W - 140 && amountSize > 50) {
-      amountSize -= 6
+    const numText = formatRp(prize.amount)
+    const rpText = 'Rp'
+    let amountSize = 120
+    const rpSizeFor = (s: number) => Math.round(s * 0.42)
+    const gapFor = (s: number) => Math.round(s * 0.16)
+
+    const measureCombined = () => {
+      ctx.font = `900 ${rpSizeFor(amountSize)}px ${SANS}`
+      const rpW = ctx.measureText(rpText).width
       ctx.font = `400 ${amountSize}px ${DISPLAY}`
+      const numW = ctx.measureText(numText).width
+      return { rpW, numW, total: rpW + gapFor(amountSize) + numW }
     }
+
+    let m = measureCombined()
+    while (m.total > W - 160 && amountSize > 56) {
+      amountSize -= 6
+      m = measureCombined()
+    }
+
+    const startX = (W - m.total) / 2
+    const rpSize = rpSizeFor(amountSize)
+    const gap = gapFor(amountSize)
+
+    ctx.textAlign = 'left'
+
+    // Rp prefix — solid gold, sans-serif, sits on the number's optical baseline
+    ctx.font = `900 ${rpSize}px ${SANS}`
+    ctx.fillStyle = '#ffd700'
+    ctx.shadowColor = 'rgba(255,215,0,0.5)'
+    ctx.shadowBlur = 18
+    ctx.fillText(rpText, startX, y)
+
+    // Number — gradient, Bungee
+    const numX = startX + m.rpW + gap
+    ctx.font = `400 ${amountSize}px ${DISPLAY}`
     const amountGrad = ctx.createLinearGradient(0, y - amountSize / 2, 0, y + amountSize / 2)
     amountGrad.addColorStop(0, '#fff700')
     amountGrad.addColorStop(0.5, '#ffa500')
     amountGrad.addColorStop(1, '#ff6b00')
     ctx.fillStyle = amountGrad
     ctx.shadowColor = 'rgba(255,215,0,0.6)'
-    ctx.shadowBlur = 25
-    ctx.fillText(amountText, W / 2, y)
+    ctx.shadowBlur = 28
+    ctx.fillText(numText, numX, y)
     ctx.shadowBlur = 0
+    ctx.textAlign = 'center'
 
     // ============ MESSAGE ============
     y += 80

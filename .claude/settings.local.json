@@ -15,7 +15,9 @@
       "Bash(rsvg-convert -w 192 -h 192 favicon.svg -o icon-192.png)",
       "Bash(rsvg-convert -w 512 -h 512 favicon.svg -o icon-512.png)",
       "Bash(rsvg-convert -w 1200 -h 630 og-image.svg -o og-image.png)",
-      "Bash(npx vue-tsc *)"
+      "Bash(npx vue-tsc *)",
+      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)",
+      "Bash(npx nuxt *)"
     ]
   }
 }
