@@ -26,12 +26,38 @@ function roundRect(
 const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", system-ui'
 const SANS = 'Poppins, system-ui, -apple-system, "Segoe UI", sans-serif'
 const DISPLAY = 'Bungee, Poppins, system-ui, sans-serif'
+const MONO = '"SF Mono", "JetBrains Mono", Menlo, Consolas, monospace'
+
+async function makeSerial(name: string, amount: number, ts: number): Promise<string> {
+  const payload = `${name}|${amount}|${ts}|prize-gacha`
+  if (typeof crypto !== 'undefined' && typeof crypto.subtle?.digest === 'function') {
+    const buf = new TextEncoder().encode(payload)
+    const hash = await crypto.subtle.digest('SHA-256', buf)
+    const bytes = new Uint8Array(hash).slice(0, 6)
+    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+    return `PG-${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}`
+  }
+  // FNV-1a fallback for non-secure contexts
+  let h = 0x811c9dc5
+  for (let i = 0; i < payload.length; i++) {
+    h ^= payload.charCodeAt(i)
+    h = Math.imul(h, 0x01000193) >>> 0
+  }
+  const hex = h.toString(16).toUpperCase().padStart(8, '0')
+  return `PG-${hex.slice(0, 4)}-${hex.slice(4, 8)}`
+}
+
+function formatTimestamp(ts: number): string {
+  const d = new Date(ts)
+  const date = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  const time = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${date} · ${time}`
+}
 
 export function useShareCard() {
   const { formatRp } = useGacha()
 
   async function buildCanvas(prize: Prize, userName: string): Promise<HTMLCanvasElement> {
-    // Wait for Bungee + Poppins to be ready before drawing
     if (typeof document !== 'undefined' && document.fonts?.ready) {
       try { await document.fonts.ready } catch {}
     }
@@ -43,6 +69,10 @@ export function useShareCard() {
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Canvas 2D context unavailable')
 
+    const ts = Date.now()
+    const serial = await makeSerial(userName, prize.amount, ts)
+    const tsLabel = formatTimestamp(ts)
+
     // ============ BACKGROUND ============
     const bg = ctx.createLinearGradient(0, 0, W, H)
     bg.addColorStop(0, '#1a0b2e')
@@ -50,27 +80,49 @@ export function useShareCard() {
     ctx.fillStyle = bg
     ctx.fillRect(0, 0, W, H)
 
-    // gold radial top-left
     const goldGlow = ctx.createRadialGradient(W * 0.2, H * 0.2, 0, W * 0.2, H * 0.2, W * 0.55)
     goldGlow.addColorStop(0, 'rgba(255,215,0,0.28)')
     goldGlow.addColorStop(1, 'rgba(255,215,0,0)')
     ctx.fillStyle = goldGlow
     ctx.fillRect(0, 0, W, H)
 
-    // purple radial bottom-right
     const purpleGlow = ctx.createRadialGradient(W * 0.8, H * 0.8, 0, W * 0.8, H * 0.8, W * 0.55)
     purpleGlow.addColorStop(0, 'rgba(138,43,226,0.4)')
     purpleGlow.addColorStop(1, 'rgba(138,43,226,0)')
     ctx.fillStyle = purpleGlow
     ctx.fillRect(0, 0, W, H)
 
-    // border ring
+    // ============ ANTI-TAMPER WATERMARK ============
+    // Diagonal repeating "PRIZE GACHA" pattern across whole card.
+    // Hard to crop/remove without re-rendering everything.
+    ctx.save()
+    ctx.globalAlpha = 0.055
+    ctx.fillStyle = '#ffd700'
+    ctx.font = `900 32px ${SANS}`
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+    const wmText = 'PRIZE GACHA  ·  '
+    const wmWidth = ctx.measureText(wmText).width
+    ctx.translate(W / 2, H / 2)
+    ctx.rotate(-Math.PI / 6) // -30°
+    const stepY = 70
+    const diag = Math.hypot(W, H)
+    let row = 0
+    for (let y = -diag; y < diag; y += stepY) {
+      const offset = row % 2 === 0 ? 0 : wmWidth / 2
+      for (let x = -diag + offset; x < diag; x += wmWidth) {
+        ctx.fillText(wmText, x, y)
+      }
+      row++
+    }
+    ctx.restore()
+
+    // ============ BORDER RINGS ============
     ctx.strokeStyle = 'rgba(255,215,0,0.45)'
     ctx.lineWidth = 5
     roundRect(ctx, 28, 28, W - 56, H - 56, 56)
     ctx.stroke()
 
-    // inner subtle ring
     ctx.strokeStyle = 'rgba(255,255,255,0.06)'
     ctx.lineWidth = 2
     roundRect(ctx, 50, 50, W - 100, H - 100, 44)
@@ -98,7 +150,7 @@ export function useShareCard() {
     ctx.fillStyle = '#ffd700'
     ctx.shadowColor = 'rgba(255,215,0,0.5)'
     ctx.shadowBlur = 20
-    ctx.fillText(`💰  MONEY GACHA`, W / 2, y)
+    ctx.fillText(`💰  PRIZE GACHA`, W / 2, y)
     ctx.shadowBlur = 0
 
     y += 55
@@ -129,7 +181,6 @@ export function useShareCard() {
     roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2)
     ctx.fill()
 
-    // badge border
     ctx.strokeStyle = 'rgba(255,255,255,0.25)'
     ctx.lineWidth = 1.5
     ctx.stroke()
@@ -155,7 +206,6 @@ export function useShareCard() {
     y += 56
     ctx.font = `900 44px ${SANS}`
     ctx.fillStyle = '#ffd700'
-    // truncate very long names
     const name = userName.length > 26 ? userName.slice(0, 25) + '…' : userName
     ctx.fillText(name, W / 2, y)
 
@@ -168,7 +218,6 @@ export function useShareCard() {
     // ============ AMOUNT ============
     y += 100
     const amountText = `Rp ${formatRp(prize.amount)}`
-    // Auto-shrink if too wide
     let amountSize = 110
     ctx.font = `400 ${amountSize}px ${DISPLAY}`
     while (ctx.measureText(amountText).width > W - 140 && amountSize > 50) {
@@ -192,7 +241,59 @@ export function useShareCard() {
     const msg = prize.msg.length > 40 ? prize.msg.slice(0, 39) + '…' : prize.msg
     ctx.fillText(msg, W / 2, y)
 
+    // ============ AUTHENTICITY BLOCK ============
+    // Seal + serial code + timestamp. The serial is a deterministic
+    // SHA-256 hash of (name|amount|timestamp) — re-derivable, unique
+    // per generation, and impractical to fake without re-rendering.
+    const authY = H - 145
+
+    // Seal (round, gold)
+    const sealX = 120
+    const sealR = 38
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(sealX, authY, sealR, 0, Math.PI * 2)
+    const sealGrad = ctx.createRadialGradient(sealX - 8, authY - 10, 4, sealX, authY, sealR)
+    sealGrad.addColorStop(0, '#fff3a8')
+    sealGrad.addColorStop(0.55, '#ffd24a')
+    sealGrad.addColorStop(1, '#a36a08')
+    ctx.fillStyle = sealGrad
+    ctx.fill()
+    ctx.lineWidth = 2
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+    ctx.stroke()
+    // Inner ring
+    ctx.beginPath()
+    ctx.arc(sealX, authY, sealR - 6, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(26,11,46,0.45)'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+    // ASLI text
+    ctx.fillStyle = '#1a0b2e'
+    ctx.font = `900 18px ${SANS}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('ASLI', sealX, authY - 4)
+    ctx.font = `800 9px ${SANS}`
+    ctx.fillText('VERIFIED', sealX, authY + 12)
+    ctx.restore()
+
+    // Serial + timestamp (right of seal)
+    ctx.textAlign = 'left'
+    ctx.font = `700 11px ${SANS}`
+    ctx.fillStyle = 'rgba(255,215,0,0.7)'
+    ctx.fillText('SERIAL', sealX + sealR + 26, authY - 22)
+
+    ctx.font = `600 22px ${MONO}`
+    ctx.fillStyle = '#ffd700'
+    ctx.fillText(serial, sealX + sealR + 26, authY)
+
+    ctx.font = `500 14px ${SANS}`
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'
+    ctx.fillText(tsLabel, sealX + sealR + 26, authY + 24)
+
     // ============ FOOTER ============
+    ctx.textAlign = 'center'
     ctx.font = `600 20px ${SANS}`
     ctx.fillStyle = 'rgba(255,255,255,0.45)'
     ctx.fillText('✨  Prize Gacha  ✨', W / 2, H - 75)
