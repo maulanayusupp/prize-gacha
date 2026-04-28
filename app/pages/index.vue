@@ -103,6 +103,13 @@ const {
   rollAgain,
 } = useGacha()
 const { shareImage, downloadImage } = useShare()
+const bgm = useGachaBGM()
+
+function handleNameSubmit(name: string) {
+  const ok = setUser(name)
+  if (ok) bgm.start()
+  return ok
+}
 
 const machineRef = ref<{ roll: () => void; buildReel: () => void } | null>(null)
 const toast = ref({ msg: '', show: false })
@@ -200,7 +207,7 @@ async function handleDownload() {
         <NameForm
           v-if="currentScreen === 'name'"
           key="name"
-          @submit="setUser"
+          @submit="handleNameSubmit"
         />
 
         <GachaMachine
@@ -229,5 +236,7 @@ async function handleDownload() {
     />
 
     <div class="toast" :class="{ show: toast.show }">{{ toast.msg }}</div>
+
+    <MuteButton />
   </div>
 </template>

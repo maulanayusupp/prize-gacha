@@ -7,6 +7,7 @@ const emit = defineEmits<{ rolled: [prize: Prize] }>()
 
 const { PRIZES, formatRp, startRoll } = useGacha()
 const { ensureAudio, startSpinTicks, stopSpinTicks, playWinChime } = useGachaSound()
+const { start: startBGM, duck: duckBGM } = useGachaBGM()
 
 const ITEM_HEIGHT = 150          // smaller so items fill the window better
 const TOTAL_ITEMS = 70
@@ -63,6 +64,8 @@ async function roll() {
   if (isSpinning.value) return
   isSpinning.value = true
   ensureAudio()
+  startBGM()
+  duckBGM(WINDUP_MS + SPIN_MS + SETTLE_PAUSE)
   navigator.vibrate?.(15)
 
   const prize = startRoll()
